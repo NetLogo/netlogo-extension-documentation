@@ -18,9 +18,12 @@ case object Patch extends AgentType
 case object Link extends AgentType
 case object Observer extends AgentType
 case class MultiAgent(agents: Seq[AgentType]) extends AgentType
+object AllAgents extends MultiAgent(Seq(Observer, Turtle, Link, Patch))
 case object Nobody extends AgentType
 
-sealed trait TypeDescription
+sealed trait TypeDescription {
+  def name = toString
+}
 
 case object NetLogoString extends TypeDescription
 case object NetLogoBoolean extends TypeDescription
@@ -39,12 +42,18 @@ case object ReferenceType extends TypeDescription
 case object OptionalType extends TypeDescription
 case class Repeatable(repeatedType: TypeDescription) extends TypeDescription
 case object WildcardType extends TypeDescription
-case class CustomType(name: String) extends TypeDescription
+case class CustomType(typeName: String) extends TypeDescription
 
-trait NamedType {
-  def name: FormattedString
+sealed trait NamedType {
+  def description: String
   def typeDescription: TypeDescription
 }
+
+case class UnnamedType(typeDescription: TypeDescription) extends NamedType {
+  override def description = typeDescription.name
+}
+
+case class DescribedType(typeDescription: TypeDescription, description: String) extends NamedType
 
 sealed trait PrimitiveType
 
@@ -56,4 +65,4 @@ case class Primitive(
   primitiveType: PrimitiveType,
   description: FormattedString,
   arguments: Seq[Seq[NamedType]],
-  agentContext: Seq[AgentType] = Seq(Turtle, Patch, Link, Observer))
+  agentContext: AgentType = AllAgents)
