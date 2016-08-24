@@ -1,4 +1,4 @@
-package org.nlogo.extensions
+package org.nlogo.build
 
 sealed trait AgentType {
   def agentName: String = "agent"

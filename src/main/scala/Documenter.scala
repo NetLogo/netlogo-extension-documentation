@@ -1,4 +1,4 @@
-package org.nlogo.extensions
+package org.nlogo.build
 
 import java.io.{ Reader, StringReader, StringWriter }
 import java.nio.file.{ Files, Path, Paths }

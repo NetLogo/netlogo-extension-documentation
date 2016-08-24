@@ -1,4 +1,4 @@
-package org.nlogo.extensions
+package org.nlogo.build
 
 import org.scalatest.FunSpec
 

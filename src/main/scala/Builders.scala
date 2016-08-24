@@ -1,4 +1,4 @@
-package org.nlogo.extensions
+package org.nlogo.build
 
 object PrimitiveBuilder {
   def empty = new PrimitiveBuilder()
