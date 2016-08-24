@@ -3,8 +3,8 @@ package org.nlogo.extensions
 import org.scalatest.FunSpec
 
 class HoconParserSpec extends FunSpec {
-  def parse(s: String): Seq[Primitive] = HoconParser(s).primitives
-  def parseWarnings(s: String): Seq[Warning] = HoconParser(s).warnings
+  def parse(s: String): Seq[Primitive] = HoconParser.parsePrimitives(s).primitives
+  def parseWarnings(s: String): Seq[Warning] = HoconParser.parsePrimitives(s).warnings
 
   def assertContainsPrimitive(s: String, p: Primitive) =
     assert(parse(s).contains(p))
@@ -34,10 +34,10 @@ class HoconParserSpec extends FunSpec {
   val baseReporter: Seq[(String, String)] = Seq("name" -> "a-reporter", "type" -> "reporter")
   val baseCommand: Seq[(String, String)] = Seq("name" -> "do-something")
 
-  describe("Parser") {
+  describe("HoconParser.parsePrimitives") {
     it("errors on empty text") {
       intercept[Exception] {
-        HoconParser("")
+        HoconParser.parsePrimitives("")
       }
     }
 
@@ -124,21 +124,28 @@ class HoconParserSpec extends FunSpec {
           .withArgumentSet(Seq(DescribedType(NetLogoList, "agent colors")))
           .withArgumentSet(Seq(UnnamedType(Agentset(Turtle)))).build)
     }
+
+    it("prefixes the primitive name with the extension name, if present") {
+      val extensionPrims = primitives(kv(baseCommand)) + "\nextensionName: bar"
+      assertContainsPrimitive(extensionPrims, commandBuilder.name("bar:do-something").build)
+    }
   }
 
   describe("HoconParser.parseConfiguration") {
     it("returns document configuration") {
-      pending
-        s"""|about = include "ABOUT.md"
-            |license = include "LICENSE.md"
-            |markdownTemplate: ""
-            |primitives: [
-            | {
-            | name: foo
-            | description: "does stuff"
-            | }
-            |],
-            |primTemplate: """.stripMargin
+        val configText =
+          s"""
+              |markdownTemplate: "{{allPrimitives}}"
+              |primitives: [
+              | {
+              | name: foo
+              | description: "does stuff"
+              | }
+              |],
+              |primTemplate: "{{name}}"""".stripMargin
+       val parsedConfig = HoconParser.parseConfig(configText)
+       assert(parsedConfig.primTemplate == "{{name}}")
+       assert(parsedConfig.markdownTemplate == "{{allPrimitives}}")
     }
   }
 }

@@ -21,12 +21,14 @@ case class WarnableValue[A](obtainedValue: A, warnings: Seq[Warning]) {
 }
 
 object HoconParser {
-  def apply(s: String): ParsingResult = {
+  def parsePrimitives(s: String): ParsingResult = {
     val parsingConfiguration =
       ConfigParseOptions.defaults.setSyntax(ConfigSyntax.CONF)
     val config = ConfigFactory.parseString(s, parsingConfiguration)
+    val extensionName = defaultValue(config, "extensionName", getString _, "")
+    val extensionPrefix = if (extensionName == "") "" else extensionName + ":"
     config.getConfigList("primitives")
-      .map(parsePrimitive)
+      .map(parsePrimitive(extensionPrefix))
       .foldLeft(ParsingResult(Seq(), Seq())) {
         case (res, WarnableValue(Some(prim), warnings)) =>
           res.copy(primitives = res.primitives :+ prim, warnings = res.warnings ++ warnings)
@@ -89,7 +91,7 @@ object HoconParser {
     }
   }
 
-  def parsePrimitive(c: Config): WarnableValue[Option[Primitive]] = {
+  def parsePrimitive(extensionPrefix: String)(c: Config): WarnableValue[Option[Primitive]] = {
     val nameOrError =
       warnableValue(c, "name", primWarning("excluding from results"), getStringOption _, None)
 
@@ -132,7 +134,7 @@ object HoconParser {
         descriptionOrError.flatMap(desc =>
             primitiveType.flatMap(primType =>
                 primArgs.map(args =>
-            name.map(n => Primitive(n, primType, desc, args))))))
+            name.map(n => Primitive(extensionPrefix + n, primType, desc, args))))))
   }
 
   def parseNamedType(c: Config): WarnableValue[NamedType] = {
@@ -144,6 +146,13 @@ object HoconParser {
           argumentDescription
             .map(description => DescribedType(argType, description))
             .getOrElse(UnnamedType(argType)))
+  }
+
+  def parseConfig(configText: String): DocumentationConfig = {
+    val parsingConfiguration =
+      ConfigParseOptions.defaults.setSyntax(ConfigSyntax.CONF)
+    val config = ConfigFactory.parseString(configText, parsingConfiguration)
+    DocumentationConfig(config.getString("markdownTemplate"), config.getString("primTemplate"))
   }
 }
 
