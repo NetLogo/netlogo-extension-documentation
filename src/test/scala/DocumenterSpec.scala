@@ -2,6 +2,8 @@ package org.nlogo.extensions
 
 import org.scalatest.FunSpec
 
+import java.nio.file.Files
+
 class DocumenterSpec extends FunSpec {
   describe("Documenter.renderPrimitive") {
     val basicPrim =
@@ -61,7 +63,14 @@ class DocumenterSpec extends FunSpec {
            |license stuff""".stripMargin
 
       val docConfig = DocumentationConfig(markdownTemplate, primTemplate)
-      assertResult(expectedDoc)(Documenter.documentAll(docConfig, Seq(basicPrim.build)))
+      assertResult(expectedDoc)(Documenter.documentAll(docConfig, Seq(basicPrim.build), new java.io.File(".").toPath))
+    }
+
+    it("renders whole documents with included files") {
+      val tempFile = Files.createTempFile("testInclude", ".txt")
+      Files.write(tempFile, "included text".getBytes)
+      val docConfig = DocumentationConfig(s"not-included text {{#include}}${tempFile.getName(tempFile.getNameCount - 1)}{{/include}}", "")
+      assertResult("not-included text included text")(Documenter.documentAll(docConfig, Seq(basicPrim.build), tempFile.getParent))
     }
   }
 }
