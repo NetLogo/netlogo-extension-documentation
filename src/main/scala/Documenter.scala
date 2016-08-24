@@ -12,7 +12,7 @@ object Documenter {
 
   class MustachePrimWrapper(prim: Primitive) {
     def name            = prim.fullName
-    def description     = prim.description.toText
+    def description     = prim.description
     def examples: java.util.List[PrimExample] =
       if (prim.arguments.isEmpty)
         Seq(new PrimExample(prim, Seq())).asJava

@@ -95,7 +95,6 @@ object HoconParser {
 
     val descriptionOrError =
       warnableValue(c, "description", primWarning("adding empty description"), getString _, "")
-        .map(TextString(_))
 
     val primitiveType =
       warnableValue(c, "type", primWarning("defaulting to command"), getString _, "command")

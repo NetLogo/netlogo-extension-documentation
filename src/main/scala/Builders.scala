@@ -6,7 +6,7 @@ object PrimitiveBuilder {
 
 class PrimitiveBuilder(
   name: String                   = "command",
-  description: FormattedString   = TextString(""),
+  description: String            = "",
   arguments: Seq[Seq[NamedType]] = Seq(),
   primType: PrimitiveType        = Command,
   agentContext: AgentType        = AllAgents) {
@@ -24,7 +24,7 @@ class PrimitiveBuilder(
     new PrimitiveBuilder(name, description, arguments :+ argSet, primType, agentContext)
 
   def description(description: String): PrimitiveBuilder =
-    new PrimitiveBuilder(name, TextString(description), arguments, primType, agentContext)
+    new PrimitiveBuilder(name, description, arguments, primType, agentContext)
 
   def build: Primitive =
     Primitive(name, primType, description, arguments, agentContext)

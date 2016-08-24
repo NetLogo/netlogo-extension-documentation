@@ -95,8 +95,6 @@ case object Command extends PrimitiveType
 case class Primitive(
   fullName: String,
   primitiveType: PrimitiveType,
-  description: FormattedString,
+  description: String,
   arguments: Seq[Seq[NamedType]],
-  agentContext: AgentType = AllAgents) {
-    def mdDescription = description.toMarkdown
-  }
+  agentContext: AgentType = AllAgents)
