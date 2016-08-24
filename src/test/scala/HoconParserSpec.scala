@@ -45,11 +45,17 @@ class HoconParserSpec extends FunSpec {
       assertResult(Seq[Primitive]())(parse(primitives()))
     }
 
-    it("parses simple primitive list") {
+    it("parses a single primitive") {
       val simplePrimitiveList =
         primitives(kv(baseCommand :+ "description" -> "does something"))
       val expected = commandBuilder.description("does something")
       assertContainsPrimitive(simplePrimitiveList, expected.build)
+    }
+
+    it("parses multiple primitives") {
+      val simplePrimitiveList = primitives(kv(baseCommand), kv(baseReporter))
+      assertContainsPrimitive(simplePrimitiveList, commandBuilder.build)
+      assertContainsPrimitive(simplePrimitiveList, reporterBuilder.asReporter(WildcardType).build)
     }
 
     it("warns when name is missing") {
@@ -117,6 +123,22 @@ class HoconParserSpec extends FunSpec {
         commandBuilder
           .withArgumentSet(Seq(DescribedType(NetLogoList, "agent colors")))
           .withArgumentSet(Seq(UnnamedType(Agentset(Turtle)))).build)
+    }
+  }
+
+  describe("HoconParser.parseConfiguration") {
+    it("returns document configuration") {
+      pending
+        s"""|about = include "ABOUT.md"
+            |license = include "LICENSE.md"
+            |markdownTemplate: ""
+            |primitives: [
+            | {
+            | name: foo
+            | description: "does stuff"
+            | }
+            |],
+            |primTemplate: """.stripMargin
     }
   }
 }
