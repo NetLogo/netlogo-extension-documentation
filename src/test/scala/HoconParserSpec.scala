@@ -2,9 +2,11 @@ package org.nlogo.build
 
 import org.scalatest.FunSpec
 
+import HoconParser._
+
 class HoconParserSpec extends FunSpec {
-  def parse(s: String): Seq[Primitive] = HoconParser.parsePrimitives(s).primitives
-  def parseWarnings(s: String): Seq[Warning] = HoconParser.parsePrimitives(s).warnings
+  def parse(s: String): Seq[Primitive] = HoconParser.parsePrimitives(parseConfigText(s)).primitives
+  def parseWarnings(s: String): Seq[Warning] = HoconParser.parsePrimitives(parseConfigText(s)).warnings
 
   def assertContainsPrimitive(s: String, p: Primitive) =
     assert(parse(s).contains(p))
@@ -36,9 +38,7 @@ class HoconParserSpec extends FunSpec {
 
   describe("HoconParser.parsePrimitives") {
     it("errors on empty text") {
-      intercept[Exception] {
-        HoconParser.parsePrimitives("")
-      }
+      intercept[Exception] { HoconParser.parsePrimitives(parseConfigText("")) }
     }
 
     it("parses empty primitives list") {
@@ -143,7 +143,7 @@ class HoconParserSpec extends FunSpec {
               | }
               |],
               |primTemplate: "{{name}}"""".stripMargin
-       val parsedConfig = HoconParser.parseConfig(configText)
+       val parsedConfig = HoconParser.parseConfig(HoconParser.parseConfigText(configText))
        assert(parsedConfig.primTemplate == "{{name}}")
        assert(parsedConfig.markdownTemplate == "{{allPrimitives}}")
     }

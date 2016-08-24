@@ -4,6 +4,8 @@ scalaVersion := "2.10.6"
 
 version    := "0.5"
 
+organization := "org.nlogo"
+
 name       := "netlogo-extension-documentation"
 
 crossPaths := false

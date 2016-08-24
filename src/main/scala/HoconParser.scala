@@ -1,6 +1,6 @@
 package org.nlogo.build
 
-import java.io.StringReader
+import java.io.{ File, StringReader }
 
 import com.typesafe.config.{ Config, ConfigException, ConfigFactory, ConfigObject, ConfigParseOptions, ConfigSyntax }
 
@@ -21,10 +21,16 @@ case class WarnableValue[A](obtainedValue: A, warnings: Seq[Warning]) {
 }
 
 object HoconParser {
-  def parsePrimitives(s: String): ParsingResult = {
-    val parsingConfiguration =
-      ConfigParseOptions.defaults.setSyntax(ConfigSyntax.CONF)
-    val config = ConfigFactory.parseString(s, parsingConfiguration)
+  val parsingConfiguration =
+    ConfigParseOptions.defaults.setSyntax(ConfigSyntax.CONF)
+
+  def parseConfigFile(f: File): Config =
+    ConfigFactory.parseFile(f, parsingConfiguration)
+
+  def parseConfigText(s: String): Config =
+    ConfigFactory.parseString(s, parsingConfiguration)
+
+  def parsePrimitives(config: Config): ParsingResult = {
     val extensionName = defaultValue(config, "extensionName", getString _, "")
     val extensionPrefix = if (extensionName == "") "" else extensionName + ":"
     config.getConfigList("primitives")
@@ -148,10 +154,7 @@ object HoconParser {
             .getOrElse(UnnamedType(argType)))
   }
 
-  def parseConfig(configText: String): DocumentationConfig = {
-    val parsingConfiguration =
-      ConfigParseOptions.defaults.setSyntax(ConfigSyntax.CONF)
-    val config = ConfigFactory.parseString(configText, parsingConfiguration)
+  def parseConfig(config: Config): DocumentationConfig = {
     DocumentationConfig(config.getString("markdownTemplate"), config.getString("primTemplate"))
   }
 }
