@@ -127,7 +127,7 @@ class HoconParserSpec extends FunSpec {
 
     it("prefixes the primitive name with the extension name, if present") {
       val extensionPrims = primitives(kv(baseCommand)) + "\nextensionName: bar"
-      assertContainsPrimitive(extensionPrims, commandBuilder.name("bar:do-something").build)
+      assertContainsPrimitive(extensionPrims, commandBuilder.extension("bar").build)
     }
 
     it("makes infix data available") {

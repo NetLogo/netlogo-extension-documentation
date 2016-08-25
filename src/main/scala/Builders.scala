@@ -6,31 +6,35 @@ object PrimitiveBuilder {
 
 class PrimitiveBuilder(
   name: String            = "command",
+  extensionName: String   = "",
   description: String     = "",
   primType: PrimitiveType = Command,
   syntax: SyntaxBuilder   = SyntaxBuilder.empty,
   tags: Seq[String]       = Seq()) {
 
   def asReporter(returnType: TypeDescription): PrimitiveBuilder =
-    new PrimitiveBuilder(name, description, Reporter(returnType), syntax, tags)
+    new PrimitiveBuilder(name, extensionName, description, Reporter(returnType), syntax, tags)
 
   def asCommand: PrimitiveBuilder =
-    new PrimitiveBuilder(name, description, Command, syntax, tags)
+    new PrimitiveBuilder(name, extensionName, description, Command, syntax, tags)
 
   def tag(tag: String) =
-    new PrimitiveBuilder(name, description, primType, syntax, tags :+ tag)
+    new PrimitiveBuilder(name, extensionName, description, primType, syntax, tags :+ tag)
 
   def name(s: String) =
-    new PrimitiveBuilder(s, description, primType, syntax, tags)
+    new PrimitiveBuilder(s, extensionName, description, primType, syntax, tags)
+
+  def extension(extensionName: String) =
+    new PrimitiveBuilder(name, extensionName, description, primType, syntax, tags)
 
   def syntax(f: SyntaxBuilder => SyntaxBuilder): PrimitiveBuilder =
-    new PrimitiveBuilder(name, description, primType, f(syntax), tags)
+    new PrimitiveBuilder(name, extensionName, description, primType, f(syntax), tags)
 
   def description(description: String): PrimitiveBuilder =
-    new PrimitiveBuilder(name, description, primType, syntax, tags)
+    new PrimitiveBuilder(name, extensionName, description, primType, syntax, tags)
 
   def build: Primitive =
-    Primitive(name, primType, description, syntax.build, tags)
+    Primitive(name, extensionName, primType, description, syntax.build, tags)
 }
 
 object SyntaxBuilder {

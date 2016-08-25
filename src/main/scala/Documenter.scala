@@ -7,18 +7,18 @@ import com.github.mustachejava._
 import scala.collection.JavaConverters._
 
 object Documenter {
-  class PrimExample(prim: Primitive, argSet: Seq[NamedType]) {
+  class PrimExample(val primitive: Primitive, argSet: Seq[NamedType]) {
     def args: java.util.List[NamedType] = argSet.asJava
   }
 
-  class MustachePrimWrapper(prim: Primitive) {
-    def name            = prim.fullName
-    def description     = prim.description
+  class MustachePrimWrapper(val primitive: Primitive) {
+    def name            = primitive.fullName
+    def description     = primitive.description
     def examples: java.util.List[PrimExample] =
-      if (prim.arguments.isEmpty)
-        Seq(new PrimExample(prim, Seq())).asJava
+      if (primitive.arguments.isEmpty)
+        Seq(new PrimExample(primitive, Seq())).asJava
       else
-        prim.arguments.map(argSet => new PrimExample(prim, argSet)).asJava
+        primitive.arguments.map(argSet => new PrimExample(primitive, argSet)).asJava
   }
 
   class ContentSection(val fullCategoryName: String, val shortCategoryName: String, primitives: Seq[Primitive]) {

@@ -32,9 +32,8 @@ object HoconParser {
 
   def parsePrimitives(config: Config): ParsingResult = {
     val extensionName = defaultValue(config, "extensionName", getString _, "")
-    val extensionPrefix = if (extensionName == "") "" else extensionName + ":"
     config.getConfigList("primitives")
-      .map(parsePrimitive(extensionPrefix))
+      .map(parsePrimitive(extensionName))
       .foldLeft(ParsingResult(Seq(), Seq())) {
         case (res, WarnableValue(Some(prim), warnings)) =>
           res.copy(primitives = res.primitives :+ prim, warnings = res.warnings ++ warnings)
@@ -99,7 +98,7 @@ object HoconParser {
     }
   }
 
-  def parsePrimitive(extensionPrefix: String)(c: Config): WarnableValue[Option[Primitive]] = {
+  def parsePrimitive(extensionName: String)(c: Config): WarnableValue[Option[Primitive]] = {
     val nameOrError =
       warnableValue(c, "name", primWarning("excluding from results"), getStringOption _, None)
 
@@ -127,7 +126,7 @@ object HoconParser {
         descriptionOrError.flatMap(desc =>
             primitiveType.flatMap(primType =>
                 primSyntax.map(syntax =>
-                    name.map(n => Primitive(extensionPrefix + n, primType, desc, syntax, tags))))))
+                    name.map(n => Primitive(n, extensionName, primType, desc, syntax, tags))))))
   }
 
   def parsePrimSyntax(c: Config): WarnableValue[PrimSyntax] = {

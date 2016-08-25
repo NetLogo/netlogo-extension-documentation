@@ -96,10 +96,12 @@ case object Command extends PrimitiveType
 case class PrimSyntax(arguments: Seq[Seq[NamedType]], agentContext: AgentType = AllAgents, isInfix: Boolean = false)
 
 case class Primitive(
-  fullName: String,
+  name: String,
+  extensionName: String,
   primitiveType: PrimitiveType,
   description: String,
   syntax: PrimSyntax,
   tags: Seq[String] = Seq()) {
     def arguments = syntax.arguments
+    def fullName = if (extensionName == "") name else s"$extensionName:$name"
   }
