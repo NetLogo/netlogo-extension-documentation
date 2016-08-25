@@ -51,11 +51,12 @@ case object Symbol extends TypeDescription {
 case object CodeBlock extends TypeDescription {
   override def typeName = "code block"
 }
-case class AnonymousProcedure(
-  procedureType:    PrimitiveType,
-  acceptsArguments: Seq[NamedType]) extends TypeDescription {
-    override def typeName = "anonymous procedure"
-  }
+case object CommandType extends TypeDescription {
+  override def typeName = "anonymous command"
+}
+case object ReporterType extends TypeDescription {
+  override def typeName = "anonymous reporter"
+}
 case object CommandBlock extends TypeDescription {
   override def typeName = "command block"
 }
@@ -92,9 +93,13 @@ sealed trait PrimitiveType
 case class Reporter(returnType: TypeDescription) extends PrimitiveType
 case object Command extends PrimitiveType
 
+case class PrimSyntax(arguments: Seq[Seq[NamedType]], agentContext: AgentType = AllAgents, isInfix: Boolean = false)
+
 case class Primitive(
   fullName: String,
   primitiveType: PrimitiveType,
   description: String,
-  arguments: Seq[Seq[NamedType]],
-  agentContext: AgentType = AllAgents)
+  syntax: PrimSyntax,
+  tags: Seq[String] = Seq()) {
+    def arguments = syntax.arguments
+  }

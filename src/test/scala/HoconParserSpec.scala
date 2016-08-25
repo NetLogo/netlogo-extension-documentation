@@ -20,7 +20,7 @@ class HoconParserSpec extends FunSpec {
   def kv(fields: Seq[(String, String)]): String =
     fields.map {
       case (k, v) =>
-        val finalV = if (v.startsWith("[") || v.startsWith("{")) v else s""""$v""""
+        val finalV = if (v.startsWith("[") || v.startsWith("{") || v == "true" || v == "false") v else s""""$v""""
         s""""$k" : $finalV"""
       }.mkString("{ ", ", ", " }")
 
@@ -92,27 +92,27 @@ class HoconParserSpec extends FunSpec {
 
     it("allows specifying un-named argument") {
       val argumentPrim = primitives(kv(baseCommand :+ args(Seq(kv(Seq("type" -> "list"))))))
-      assertContainsPrimitive(argumentPrim, commandBuilder.withArgumentSet(Seq(UnnamedType(NetLogoList))).build)
+      assertContainsPrimitive(argumentPrim, commandBuilder.syntax(_.withArgumentSet(Seq(UnnamedType(NetLogoList)))).build)
     }
 
     val agentColorList = kv(Seq("type" -> "list", "description" -> "agent colors"))
 
     it("allows specifying named arguments") {
       val argumentPrim = primitives(kv(baseCommand :+ args(Seq(agentColorList))))
-      assertContainsPrimitive(argumentPrim, commandBuilder.withArgumentSet(Seq(DescribedType(NetLogoList, "agent colors"))).build)
+      assertContainsPrimitive(argumentPrim, commandBuilder.syntax(_.withArgumentSet(Seq(DescribedType(NetLogoList, "agent colors")))).build)
     }
 
     it("doesn't blow up when arguments improperly specified") {
       val argumentPrim = primitives(kv(baseCommand :+ args(Seq("{}"))))
       assertContainsWarning(argumentPrim, Warning("Argument on line 2 has no type, assuming wildcard type", 2))
-      assertContainsPrimitive(argumentPrim, commandBuilder.withArgumentSet(Seq(UnnamedType(WildcardType))).build)
+      assertContainsPrimitive(argumentPrim, commandBuilder.syntax(_.withArgumentSet(Seq(UnnamedType(WildcardType)))).build)
     }
 
     it("allows specifying multiple arguments") {
       val argument2 = kv(Seq("type" -> "patch"))
       val argumentPrim = primitives(kv(baseCommand :+ args(Seq(agentColorList, argument2))))
       assertContainsPrimitive(argumentPrim,
-        commandBuilder.withArgumentSet(Seq(DescribedType(NetLogoList, "agent colors"), UnnamedType(Agent(Patch)))).build)
+        commandBuilder.syntax(_.withArgumentSet(Seq(DescribedType(NetLogoList, "agent colors"), UnnamedType(Agent(Patch))))).build)
     }
 
     it("allows specifying alternate argument lists") {
@@ -121,21 +121,30 @@ class HoconParserSpec extends FunSpec {
         altArgs(Seq(kv(Seq("type" -> "turtleset"))))))
       assertContainsPrimitive(multiArgPrim,
         commandBuilder
-          .withArgumentSet(Seq(DescribedType(NetLogoList, "agent colors")))
-          .withArgumentSet(Seq(UnnamedType(Agentset(Turtle)))).build)
+          .syntax(_.withArgumentSet(Seq(DescribedType(NetLogoList, "agent colors"))))
+          .syntax(_.withArgumentSet(Seq(UnnamedType(Agentset(Turtle))))).build)
     }
 
     it("prefixes the primitive name with the extension name, if present") {
       val extensionPrims = primitives(kv(baseCommand)) + "\nextensionName: bar"
       assertContainsPrimitive(extensionPrims, commandBuilder.name("bar:do-something").build)
     }
+
+    it("makes infix data available") {
+      val infixPrim = primitives(kv(baseCommand :+ ("infix" -> "true")))
+      assertContainsPrimitive(infixPrim, commandBuilder.syntax(_.infix).build)
+    }
+
+    it("parses tags") {
+      val taggedPrim = primitives(kv(baseCommand :+ ("tags" -> "[ \"a-tag\" ]")))
+      assertContainsPrimitive(taggedPrim, commandBuilder.tag("a-tag").build)
+    }
   }
 
   describe("HoconParser.parseConfiguration") {
     it("returns document configuration") {
         val configText =
-          s"""
-              |markdownTemplate: "{{allPrimitives}}"
+          s"""|markdownTemplate: "{{allPrimitives}}"
               |primitives: [
               | {
               | name: foo
@@ -146,6 +155,19 @@ class HoconParserSpec extends FunSpec {
        val parsedConfig = HoconParser.parseConfig(HoconParser.parseConfigText(configText))
        assert(parsedConfig.primTemplate == "{{name}}")
        assert(parsedConfig.markdownTemplate == "{{allPrimitives}}")
+       assert(parsedConfig.tableOfContents == Map())
+    }
+
+    it("parses tableOfContents") {
+      val withTableOfContents =
+        """|markdownTemplate: ""
+           |primitives: [],
+           |primTemplate: "",
+           |tableOfContents: {
+           | "foo": "bar"
+           |}""".stripMargin
+      val parsedConfig = HoconParser.parseConfig(HoconParser.parseConfigText(withTableOfContents))
+      assert(parsedConfig.tableOfContents == Map("foo" -> "bar"))
     }
   }
 }

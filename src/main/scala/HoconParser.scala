@@ -81,6 +81,8 @@ object HoconParser {
       case "symbol"     => Symbol
       case "code block" => CodeBlock
       case "command block" => CommandBlock
+      case "command"   => CommandType
+      case "reporter"  => ReporterType
       case "reference" => ReferenceType
       case "optional command block" => OptionalType
       case s if (s.startsWith("repeatable ")) => Repeatable(stringToType(s.stripPrefix("repeatable ")))
@@ -114,6 +116,23 @@ object HoconParser {
               warnableValue(c, "returns", primWarning("assuming wildcard type"), getString _, "")
                 .map(stringToType).map(Reporter(_)))
 
+    val primSyntax = parsePrimSyntax(c)
+
+    val tags: Seq[String] =
+      defaultValue(c, "tags",
+        (c: Config, k: String) => c.getAnyRefList(k), new java.util.ArrayList[AnyRef]())
+        .collect { case s: String => s }
+
+    nameOrError.flatMap(name =>
+        descriptionOrError.flatMap(desc =>
+            primitiveType.flatMap(primType =>
+                primSyntax.map(syntax =>
+                    name.map(n => Primitive(extensionPrefix + n, primType, desc, syntax, tags))))))
+  }
+
+  def parsePrimSyntax(c: Config): WarnableValue[PrimSyntax] = {
+    val infix = defaultValue[Boolean](c, "infix", _.getBoolean(_), false)
+
     val arguments =
       foldArgs(defaultValue[java.util.List[_ <: Config]](
         c, "arguments", _.getConfigList(_), new java.util.ArrayList[Config]())
@@ -136,16 +155,13 @@ object HoconParser {
               else
                 altArgs.map(aas => Seq(args, aas)).getOrElse(Seq(args))))
 
-    nameOrError.flatMap(name =>
-        descriptionOrError.flatMap(desc =>
-            primitiveType.flatMap(primType =>
-                primArgs.map(args =>
-            name.map(n => Primitive(extensionPrefix + n, primType, desc, args))))))
+    primArgs.map(as => PrimSyntax(as, isInfix = infix))
   }
 
   def parseNamedType(c: Config): WarnableValue[NamedType] = {
     val argumentDescription = defaultValue[Option[String]](
       c, "description", getStringOption _, None)
+
     warnableValue(c, "type", argWarning("assuming wildcard type"), getString _, "anything")
       .map(stringToType)
       .map(argType =>
@@ -155,7 +171,21 @@ object HoconParser {
   }
 
   def parseConfig(config: Config): DocumentationConfig = {
-    DocumentationConfig(config.getString("markdownTemplate"), config.getString("primTemplate"))
+    val tableOfContents: Map[String, String] = try {
+      val tocConf = config.getObject("tableOfContents")
+      tocConf.keySet.flatMap {
+        case key =>
+          defaultValue[Option[String]](tocConf.toConfig, key, getStringOption _, None)
+            .map(value => (key, value))
+      }.toMap
+    } catch {
+      case missing: ConfigException.Missing => Map[String, String]()
+      case wrongType: ConfigException.WrongType => Map[String, String]()
+    }
+    DocumentationConfig(
+      config.getString("markdownTemplate"),
+      config.getString("primTemplate"),
+      tableOfContents)
   }
 }
 
