@@ -14,7 +14,7 @@ class DocumenterSpec extends FunSpec {
       """|### {{name}}
          |
          |```NetLogo
-         |{{#examples}}{{name}}{{#args}} *{{typeDescription.typeName}}*{{/args}}{{/examples}}
+         |{{#examples}}{{name}}{{#args}} *{{typeName.name}}*{{/args}}{{/examples}}
          |```
          |
          |{{description}}""".stripMargin

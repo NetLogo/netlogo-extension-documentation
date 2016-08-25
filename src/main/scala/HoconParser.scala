@@ -64,7 +64,7 @@ object HoconParser {
       }
   }
 
-  def stringToType(s: String): TypeDescription =
+  def stringToType(s: String): TypeName =
     s match {
       case ""           => WildcardType
       case "anything"   => WildcardType
@@ -159,7 +159,7 @@ object HoconParser {
 
   def parseNamedType(c: Config): WarnableValue[NamedType] = {
     val argumentDescription = defaultValue[Option[String]](
-      c, "description", getStringOption _, None)
+      c, "name", getStringOption _, None)
 
     warnableValue(c, "type", argWarning("assuming wildcard type"), getString _, "anything")
       .map(stringToType)

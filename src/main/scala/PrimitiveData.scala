@@ -23,74 +23,74 @@ case object Observer extends AgentType {
 case class MultiAgent(agents: Seq[AgentType]) extends AgentType
 object AllAgents extends MultiAgent(Seq(Observer, Turtle, Link, Patch))
 
-sealed trait TypeDescription {
-  def typeName = toString
+sealed trait TypeName {
+  def name = toString
 }
 
-case object NetLogoString extends TypeDescription {
-  override val typeName = "string"
+case object NetLogoString extends TypeName {
+  override val name = "string"
 }
-case object NetLogoBoolean extends TypeDescription {
-  override val typeName = "boolean"
+case object NetLogoBoolean extends TypeName {
+  override val name = "boolean"
 }
-case object NetLogoNumber extends TypeDescription {
-  override val typeName = "number"
+case object NetLogoNumber extends TypeName {
+  override val name = "number"
 }
-case object NetLogoList extends TypeDescription {
-  override val typeName = "list"
+case object NetLogoList extends TypeName {
+  override val name = "list"
 }
-case class Agentset(agentType: AgentType) extends TypeDescription {
-  override def typeName = agentType.agentName + "set"
+case class Agentset(agentType: AgentType) extends TypeName {
+  override def name = agentType.agentName + "set"
 }
-case class Agent(agentType: AgentType) extends TypeDescription {
-  override def typeName = agentType.agentName
+case class Agent(agentType: AgentType) extends TypeName {
+  override def name = agentType.agentName
 }
-case object Symbol extends TypeDescription {
-  override def typeName = "variable"
+case object Symbol extends TypeName {
+  override def name = "variable"
 }
-case object CodeBlock extends TypeDescription {
-  override def typeName = "code block"
+case object CodeBlock extends TypeName {
+  override def name = "code block"
 }
-case object CommandType extends TypeDescription {
-  override def typeName = "anonymous command"
+case object CommandType extends TypeName {
+  override def name = "anonymous command"
 }
-case object ReporterType extends TypeDescription {
-  override def typeName = "anonymous reporter"
+case object ReporterType extends TypeName {
+  override def name = "anonymous reporter"
 }
-case object CommandBlock extends TypeDescription {
-  override def typeName = "command block"
+case object CommandBlock extends TypeName {
+  override def name = "command block"
 }
-case class ReporterBlock(returnTypeDescription: TypeDescription) extends TypeDescription {
-  override def typeName = "reporter block"
+case class ReporterBlock(returnTypeName: TypeName) extends TypeName {
+  override def name = "reporter block"
 }
-case object ReferenceType extends TypeDescription {
-  override def typeName = "variable"
+case object ReferenceType extends TypeName {
+  override def name = "variable"
 }
-case object OptionalType extends TypeDescription {
-  override def typeName = "optional command block"
+case object OptionalType extends TypeName {
+  override def name = "optional command block"
 }
-case class Repeatable(repeatedType: TypeDescription) extends TypeDescription
-case object WildcardType extends TypeDescription {
-  override def typeName = "anything"
+case class Repeatable(repeatedType: TypeName) extends TypeName
+case object WildcardType extends TypeName {
+  override def name = "anything"
 }
-case class CustomType(customName: String) extends TypeDescription {
-  override def typeName = customName
+case class CustomType(customName: String) extends TypeName {
+  override def name = customName
 }
 
 sealed trait NamedType {
-  def description: String
-  def typeDescription: TypeDescription
+  def name: String
+  def typeName: TypeName
 }
 
-case class UnnamedType(typeDescription: TypeDescription) extends NamedType {
-  override def description = typeDescription.typeName
+case class UnnamedType(typeName: TypeName) extends NamedType {
+  override def name = typeName.name
 }
 
-case class DescribedType(typeDescription: TypeDescription, description: String) extends NamedType
+case class DescribedType(typeName: TypeName, name: String) extends NamedType
 
 sealed trait PrimitiveType
 
-case class Reporter(returnType: TypeDescription) extends PrimitiveType
+case class Reporter(returnType: TypeName) extends PrimitiveType
 case object Command extends PrimitiveType
 
 case class PrimSyntax(arguments: Seq[Seq[NamedType]], agentContext: AgentType = AllAgents, isInfix: Boolean = false)

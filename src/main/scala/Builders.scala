@@ -12,7 +12,7 @@ class PrimitiveBuilder(
   syntax: SyntaxBuilder   = SyntaxBuilder.empty,
   tags: Seq[String]       = Seq()) {
 
-  def asReporter(returnType: TypeDescription): PrimitiveBuilder =
+  def asReporter(returnType: TypeName): PrimitiveBuilder =
     new PrimitiveBuilder(name, extensionName, description, Reporter(returnType), syntax, tags)
 
   def asCommand: PrimitiveBuilder =

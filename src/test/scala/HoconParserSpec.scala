@@ -95,7 +95,7 @@ class HoconParserSpec extends FunSpec {
       assertContainsPrimitive(argumentPrim, commandBuilder.syntax(_.withArgumentSet(Seq(UnnamedType(NetLogoList)))).build)
     }
 
-    val agentColorList = kv(Seq("type" -> "list", "description" -> "agent colors"))
+    val agentColorList = kv(Seq("type" -> "list", "name" -> "agent colors"))
 
     it("allows specifying named arguments") {
       val argumentPrim = primitives(kv(baseCommand :+ args(Seq(agentColorList))))
