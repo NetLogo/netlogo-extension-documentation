@@ -21,6 +21,10 @@ object Documenter {
         prim.arguments.map(argSet => new PrimExample(prim, argSet)).asJava
   }
 
+  class ContentSection(val fullCategoryName: String, val shortCategoryName: String, primitives: Seq[Primitive]) {
+    val prims = primitives.map(new MustachePrimWrapper(_)).asJava
+  }
+
   def renderPrimitive(prim: Primitive, mustacheTemplate: String): String = {
     val mr = new MustacheResolver {
       override def getReader(resourceName: String): Reader =
@@ -33,6 +37,10 @@ object Documenter {
     out.toString
   }
 
+  def contentSection(prims: Seq[Primitive])(shortName: String, fullName: String): ContentSection = {
+    new ContentSection(fullName, shortName, prims.filter(_.tags.contains(shortName)))
+  }
+
   def documentAll(docConfig: DocumentationConfig, prims: Seq[Primitive], basePath: Path): String = {
     val renderedPrims = prims.map(renderPrimitive(_, docConfig.primTemplate))
 
@@ -43,7 +51,18 @@ object Documenter {
     val mf = new DefaultMustacheFactory(mr)
     val stache = mf.compile("document")
     val out = new StringWriter()
-    stache.execute(out, Map("allPrimitives" -> renderedPrims.asJava, "include" -> new IncludeFile(basePath)).asJava).flush()
+
+    val userSpecifiedContents = docConfig.tableOfContents.map((contentSection(prims) _).tupled).toSeq.asJava
+
+    val tableOfContents =
+      if (userSpecifiedContents.isEmpty) Seq(new ContentSection("", "", prims)).asJava else userSpecifiedContents
+
+    val variables = Map(
+      "allPrimitives" -> renderedPrims.asJava,
+      "contents"      -> tableOfContents,
+      "include"       -> new IncludeFile(basePath)) ++
+      docConfig.additionalConfig
+    stache.execute(out, variables.asJava).flush()
     out.toString
   }
 

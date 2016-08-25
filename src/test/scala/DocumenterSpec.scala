@@ -6,6 +6,8 @@ import java.nio.file.Files
 
 class DocumenterSpec extends FunSpec {
   describe("Documenter.renderPrimitive") {
+    val dummyPath = new java.io.File(".").toPath
+
     val basicPrim =
       PrimitiveBuilder.empty.name("foo").description("does stuff")
     val primTemplate =
@@ -63,7 +65,7 @@ class DocumenterSpec extends FunSpec {
            |license stuff""".stripMargin
 
       val docConfig = DocumentationConfig(markdownTemplate, primTemplate, Map())
-      assertResult(expectedDoc)(Documenter.documentAll(docConfig, Seq(basicPrim.build), new java.io.File(".").toPath))
+      assertResult(expectedDoc)(Documenter.documentAll(docConfig, Seq(basicPrim.build), dummyPath))
     }
 
     it("renders whole documents with included files") {
@@ -74,12 +76,25 @@ class DocumenterSpec extends FunSpec {
     }
 
     it("makes additional config variables available to markdownTemplate") {
-      // under key additionalConfig
-      pending
+      val docConfig = DocumentationConfig("{{a}} {{b}}", "", Map(), Map("a" -> "1", "b" -> "2"))
+      assertResult("1 2")(Documenter.documentAll(docConfig, Seq(), dummyPath))
     }
 
     it("makes data available for a table of contents") {
-      pending
+      val docTemplate =
+        "{{#contents}}{{fullCategoryName}} {{#prims}}{{name}} {{/prims}}{{/contents}}"
+      val docConfig = DocumentationConfig(docTemplate, "",
+        Map("tag" -> "Full Name"), Map("a" -> "1", "b" -> "2"))
+      val prim = basicPrim.tag("tag").build
+      assertResult("Full Name foo ")(Documenter.documentAll(docConfig, Seq(prim), dummyPath))
+    }
+
+    it("makes data available when there are no categories") {
+      val prim = basicPrim.tag("tag").build
+      val docTemplate =
+        "{{#contents}}{{fullCategoryName}} {{#prims}}{{name}} {{/prims}}{{/contents}}"
+      val docConfig = DocumentationConfig(docTemplate, "", Map(), Map())
+      assertResult(" foo ")(Documenter.documentAll(docConfig, Seq(prim), dummyPath))
     }
   }
 }

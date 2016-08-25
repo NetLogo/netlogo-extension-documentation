@@ -171,6 +171,11 @@ object HoconParser {
   }
 
   def parseConfig(config: Config): DocumentationConfig = {
+    def getMap(c: Config, k: String): java.util.Map[String, Object] = c.getObject(k).unwrapped
+
+    val additionalConfig =
+      defaultValue[java.util.Map[String, Object]](config, "additionalConfig", getMap _, new java.util.HashMap[String, Object]())
+
     val tableOfContents: Map[String, String] = try {
       val tocConf = config.getObject("tableOfContents")
       tocConf.keySet.flatMap {
@@ -182,10 +187,11 @@ object HoconParser {
       case missing: ConfigException.Missing => Map[String, String]()
       case wrongType: ConfigException.WrongType => Map[String, String]()
     }
-    DocumentationConfig(
+    new DocumentationConfig(
       config.getString("markdownTemplate"),
       config.getString("primTemplate"),
-      tableOfContents)
+      tableOfContents,
+      additionalConfig)
   }
 }
 
