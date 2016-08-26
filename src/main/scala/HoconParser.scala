@@ -65,24 +65,25 @@ object HoconParser {
   }
 
   def stringToType(s: String): TypeName =
-    s match {
-      case ""           => WildcardType
-      case "anything"   => WildcardType
-      case "list"       => NetLogoList
-      case "string"     => NetLogoString
-      case "boolean"    => NetLogoBoolean
-      case "number"     => NetLogoNumber
-      case "patchset"   => Agentset(Patch)
-      case "turtleset"  => Agentset(Turtle)
-      case "linkset"    => Agentset(Link)
-      case "turtle"     => Agent(Turtle)
-      case "patch"      => Agent(Patch)
-      case "symbol"     => Symbol
-      case "code block" => CodeBlock
-      case "command block" => CommandBlock
-      case "command"   => CommandType
-      case "reporter"  => ReporterType
-      case "reference" => ReferenceType
+    s.toLowerCase match {
+      case ""               => WildcardType
+      case "anything"       => WildcardType
+      case "list"           => NetLogoList
+      case "string"         => NetLogoString
+      case "boolean"        => NetLogoBoolean
+      case "number"         => NetLogoNumber
+      case "patchset"       => Agentset(Patch)
+      case "turtleset"      => Agentset(Turtle)
+      case "linkset"        => Agentset(Link)
+      case "turtle"         => Agent(Turtle)
+      case "patch"          => Agent(Patch)
+      case "symbol"         => Symbol
+      case "code block"     => CodeBlock
+      case "command block"  => CommandBlock
+      case "command"        => CommandType
+      case "reporter"       => ReporterType
+      case "reporter block" => ReporterBlock
+      case "reference"      => ReferenceType
       case "optional command block" => OptionalType
       case s if (s.startsWith("repeatable ")) => Repeatable(stringToType(s.stripPrefix("repeatable ")))
       case other => CustomType(other)

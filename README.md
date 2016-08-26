@@ -17,7 +17,7 @@ resolvers += Resolver.url(
   url("http://dl.bintray.com/content/netlogo/NetLogo-JVM"))(
     Resolver.ivyStylePatterns)
 
-addSbtPlugin("org.nlogo" % "netlogo-extension-documentation" % "0.5.4")
+addSbtPlugin("org.nlogo" % "netlogo-extension-documentation" % "0.6")
 ```
 
 Then add the following to your `build.sbt`

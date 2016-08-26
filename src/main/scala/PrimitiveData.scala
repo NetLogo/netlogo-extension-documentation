@@ -60,7 +60,7 @@ case object ReporterType extends TypeName {
 case object CommandBlock extends TypeName {
   override def name = "command block"
 }
-case class ReporterBlock(returnTypeName: TypeName) extends TypeName {
+case object ReporterBlock extends TypeName {
   override def name = "reporter block"
 }
 case object ReferenceType extends TypeName {
