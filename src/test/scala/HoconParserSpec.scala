@@ -68,7 +68,7 @@ class HoconParserSpec extends FunSpec {
     it("warns when description is missing") {
       val missingDescription = primitives(kv(baseCommand))
       assertContainsWarning(missingDescription,
-        Warning("Missing description for primitive on line 2, adding empty description", 2))
+        Warning("Missing description for primitive on line 2, adding empty description for primitive do-something", 2))
       assertContainsPrimitive(missingDescription, commandBuilder.description("").build)
     }
 
@@ -81,7 +81,7 @@ class HoconParserSpec extends FunSpec {
     it("warns if a reporter has no named type") {
       val missingType = primitives(kv(baseReporter))
       assertContainsWarning(missingType,
-        Warning("Missing returns for primitive on line 2, assuming wildcard type", 2))
+        Warning("Missing returns for primitive on line 2, assuming wildcard type for reporter a-reporter", 2))
       assertContainsPrimitive(missingType, reporterBuilder.asReporter(WildcardType).build)
     }
 

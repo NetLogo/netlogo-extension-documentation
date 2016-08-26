@@ -6,14 +6,14 @@ import com.typesafe.config.{ Config, ConfigException, ConfigFactory, ConfigObjec
 
 import scala.collection.JavaConversions._
 
-case class WarnableValue[A](obtainedValue: A, warnings: Seq[Warning]) {
+case class WarnableValue[+A](obtainedValue: A, warnings: Seq[Warning]) {
   def map[B](f: A => B): WarnableValue[B] = WarnableValue(f(obtainedValue), warnings)
   def flatMap[B](f: A => WarnableValue[B]): WarnableValue[B] = {
     val newValue = f(obtainedValue)
     newValue.copy(warnings = warnings ++ newValue.warnings)
   }
 
-  def merge[B](otherWarnable: WarnableValue[B], f: (A, B) => A): WarnableValue[A] = {
+  def merge[B, C](otherWarnable: WarnableValue[B], f: (A, B) => C): WarnableValue[C] = {
     otherWarnable.flatMap(
       otherValue => new WarnableValue(f(obtainedValue, otherValue),
         warnings ++ otherWarnable.warnings))
@@ -94,7 +94,7 @@ object HoconParser {
 
   def foldArgs(parsedArgs: Seq[WarnableValue[NamedType]]): WarnableValue[Seq[NamedType]] = {
     parsedArgs.foldLeft(WarnableValue[Seq[NamedType]](Seq(), Seq())) {
-      case (acc, theseArgs) => acc.merge[NamedType](theseArgs, _ :+ _)
+      case (acc, theseArgs) => acc.merge[NamedType, Seq[NamedType]](theseArgs, _ :+ _)
     }
   }
 
@@ -102,17 +102,18 @@ object HoconParser {
     val nameOrError =
       warnableValue(c, "name", primWarning("excluding from results"), getStringOption _, None)
 
-    val descriptionOrError =
-      warnableValue(c, "description", primWarning("adding empty description"), getString _, "")
+    def descriptionOrError(name: String) =
+      warnableValue(c, "description",
+        primWarning(s"adding empty description for primitive $name"), getString _, "")
 
-    val primitiveType =
-      warnableValue(c, "type", primWarning("defaulting to command"), getString _, "command")
+    def primitiveType(name: String) =
+      warnableValue(c, "type", primWarning(s"defaulting to command for primitive $name"), getString _, "command")
         .flatMap[PrimitiveType](
           procedureKind =>
             if (procedureKind == "command")
               WarnableValue(Command, Seq())
             else
-              warnableValue(c, "returns", primWarning("assuming wildcard type"), getString _, "")
+              warnableValue(c, "returns", primWarning(s"assuming wildcard type for reporter $name"), getString _, "")
                 .map(stringToType).map(Reporter(_)))
 
     val primSyntax = parsePrimSyntax(c)
@@ -122,11 +123,16 @@ object HoconParser {
         (c: Config, k: String) => c.getAnyRefList(k), new java.util.ArrayList[AnyRef]())
         .collect { case s: String => s }
 
-    nameOrError.flatMap(name =>
-        descriptionOrError.flatMap(desc =>
-            primitiveType.flatMap(primType =>
-                primSyntax.map(syntax =>
-                    name.map(n => Primitive(n, extensionName, primType, desc, syntax, tags))))))
+    def buildPrimitiveWithName(name: String): WarnableValue[Primitive] =
+      descriptionOrError(name).flatMap(desc =>
+          primitiveType(name).flatMap(primType =>
+              primSyntax.map(syntax =>
+                  Primitive(name, extensionName, primType, desc, syntax, tags))))
+
+    nameOrError.flatMap((nameOpt: Option[String]) =>
+        nameOpt
+          .map(name => buildPrimitiveWithName(name).map(Some(_)))
+          .getOrElse(WarnableValue[Option[Primitive]](None, nameOrError.warnings)))
   }
 
   def parsePrimSyntax(c: Config): WarnableValue[PrimSyntax] = {
@@ -161,7 +167,8 @@ object HoconParser {
     val argumentDescription = defaultValue[Option[String]](
       c, "name", getStringOption _, None)
 
-    warnableValue(c, "type", argWarning("assuming wildcard type"), getString _, "anything")
+    val atLocation = argumentDescription.map(" for argument name " + _).getOrElse("")
+    warnableValue(c, "type", argWarning(s"assuming wildcard type$atLocation"), getString _, "anything")
       .map(stringToType)
       .map(argType =>
           argumentDescription
