@@ -29,6 +29,7 @@ enablePlugins(org.nlogo.build.ExtensionDocumentationPlugin)
 Finally, add a simple documentation.conf
 
 ```hocon
+extensionName = "my-ext"
 markdownTemplate = """
 # Your NetLogo Extension
 
@@ -45,7 +46,7 @@ This extension contains NetLogo primitives
 primTemplate = """
 ### `{{name}}`
 
-{{description}}
+{{{description}}}
 """
 primitives = [
   {
