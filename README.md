@@ -46,6 +46,12 @@ This extension contains NetLogo primitives
 primTemplate = """
 ### `{{name}}`
 
+```NetLogo
+{{#examples}}
+{{primitive.fullName}}{{#args}} {{name}}{{/args}}
+{{/examples}}
+```
+
 {{{description}}}
 """
 primitives = [
