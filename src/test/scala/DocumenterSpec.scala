@@ -41,6 +41,16 @@ class DocumenterSpec extends FunSpec {
         Documenter.renderPrimitive(basicPrim.syntax(_.withArgumentSet(Seq(UnnamedType(NetLogoList)))).build, primTemplate))
     }
 
+    it("renders infix primitives") {
+      val primTemplate = """{{#isInfix}}{{#examples}}{{leftArg.name}} {{name}}{{#rightArgs}} {{name}}{{/rightArgs}}{{/examples}}{{/isInfix}}"""
+      val infixPrim = basicPrim
+        .syntax(_.infix)
+        .syntax(_.withArgumentSet(Seq(DescribedType(NetLogoList, "a"), DescribedType(NetLogoList, "b"))))
+        .build
+      val expectedResult = """a foo b"""
+      assertResult(expectedResult)(Documenter.renderPrimitive(infixPrim, primTemplate))
+    }
+
     it("renders whole documents according to the doc config") {
       val expectedDoc =
         """|about this

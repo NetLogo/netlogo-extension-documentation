@@ -150,8 +150,11 @@ The following types are recognized. All other types are assumed to be a custom t
 * `name`
 * `description` (remember to use `{{{`, `}}}`, as this is in markdown)
 * `primitive`: a Primitive object (see PrimitiveData.scala)
+* `isInfix`: boolean value, true only if primitive is infix prim
 * `examples`: a list of objects encapsulating argument sets. There will always be one element in `examples`, even if the `arguments` key wasn't specified. Examples contains the following:
   * `primitive`: the Primitive object this example belongs to (see PrimitiveData.scala)
   * `args`: a list of argument values from above (`NamedType` in PrimitiveData.scala). Each argument has the following keys:
     * `name`: the name given to the argument
     * `typeName`: The TypeName of the argument. Use `{{typeName.name}}` to get the human-readable name of the type
+  * `leftArg`: a single argument value (infix primitives only)
+  * `rightArgs`: a list of argument values, omitting left argument (infix primitives only)

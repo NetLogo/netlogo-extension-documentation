@@ -7,18 +7,32 @@ import com.github.mustachejava._
 import scala.collection.JavaConverters._
 
 object Documenter {
-  class PrimExample(val primitive: Primitive, argSet: Seq[NamedType]) {
+  trait PrimExample {
+    def primitive: Primitive
+    def args: java.util.List[NamedType]
+  }
+
+  class PrefixPrimExample(val primitive: Primitive, argSet: Seq[NamedType]) extends PrimExample {
     def args: java.util.List[NamedType] = argSet.asJava
+  }
+
+  class InfixPrimExample(val primitive: Primitive, argSet: Seq[NamedType]) extends PrimExample{
+    def leftArg:   NamedType                 = argSet.head
+    def rightArgs: java.util.List[NamedType] = argSet.tail.asJava
+    def args:      java.util.List[NamedType] = argSet.asJava
   }
 
   class MustachePrimWrapper(val primitive: Primitive) {
     def name            = primitive.fullName
     def description     = primitive.description
-    def examples: java.util.List[PrimExample] =
+    def isInfix         = primitive.syntax.isInfix
+    def examples: java.util.List[_ <: PrimExample] =
       if (primitive.arguments.isEmpty)
-        Seq(new PrimExample(primitive, Seq())).asJava
+        Seq(new PrefixPrimExample(primitive, Seq())).asJava
+      else if (primitive.syntax.isInfix)
+        primitive.arguments.map(argSet => new InfixPrimExample(primitive, argSet)).asJava
       else
-        primitive.arguments.map(argSet => new PrimExample(primitive, argSet)).asJava
+        primitive.arguments.map(argSet => new PrefixPrimExample(primitive, argSet)).asJava
   }
 
   class ContentSection(val fullCategoryName: String, val shortCategoryName: String, primitives: Seq[Primitive]) {
