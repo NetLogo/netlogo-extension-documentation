@@ -41,6 +41,22 @@ class DocumenterSpec extends FunSpec {
         Documenter.renderPrimitive(basicPrim.syntax(_.withArgumentSet(Seq(UnnamedType(NetLogoList)))).build, primTemplate))
     }
 
+    it("makes _name_ and _fullName_ available for lowercase-only use") {
+      val basicPrim =
+        PrimitiveBuilder.empty.name("fooBar").description("does stuff")
+      val primTemplate =
+        """|<div id="{{_name_}}">
+           |{{#examples}}
+           |<tt>{{_name_}}</tt>
+           |{{/examples}}
+           |</div>""".stripMargin
+      val renderedPrim = Documenter.renderPrimitive(basicPrim.build, primTemplate)
+      assertResult(
+        """|<div id="foobar">
+           |<tt>foobar</tt>
+           |</div>""".stripMargin)(renderedPrim)
+    }
+
     it("renders infix primitives") {
       val primTemplate = """{{#isInfix}}{{#examples}}{{leftArg.name}} {{name}}{{#rightArgs}} {{name}}{{/rightArgs}}{{/examples}}{{/isInfix}}"""
       val infixPrim = basicPrim

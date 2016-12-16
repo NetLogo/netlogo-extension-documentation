@@ -10,6 +10,8 @@ object Documenter {
   trait PrimExample {
     def primitive: Primitive
     def args: java.util.List[NamedType]
+    def name = primitive.fullName
+    def _name_ = primitive.fullName.toLowerCase
   }
 
   class PrefixPrimExample(val primitive: Primitive, argSet: Seq[NamedType]) extends PrimExample {
@@ -24,6 +26,7 @@ object Documenter {
 
   class MustachePrimWrapper(val primitive: Primitive) {
     def name            = primitive.fullName
+    def _name_          = primitive.fullName.toLowerCase
     def description     = primitive.description
     def isInfix         = primitive.syntax.isInfix
     def examples: java.util.List[_ <: PrimExample] =
