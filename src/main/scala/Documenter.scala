@@ -1,9 +1,11 @@
 package org.nlogo.build
 
-import java.io.{ Reader, StringReader, StringWriter }
+import java.util.{ Map => JMap }
+import java.io.{ IOException, Reader, StringReader, StringWriter, Writer }
 import java.nio.file.{ Files, Path, Paths }
 
 import com.github.mustachejava._
+
 import scala.collection.JavaConverters._
 
 object Documenter {
@@ -18,13 +20,13 @@ object Documenter {
     def args: java.util.List[NamedType] = argSet.asJava
   }
 
-  class InfixPrimExample(val primitive: Primitive, argSet: Seq[NamedType]) extends PrimExample{
+  class InfixPrimExample(val primitive: Primitive, argSet: Seq[NamedType]) extends PrimExample {
     def leftArg:   NamedType                 = argSet.head
     def rightArgs: java.util.List[NamedType] = argSet.tail.asJava
     def args:      java.util.List[NamedType] = argSet.asJava
   }
 
-  class MustachePrimWrapper(val primitive: Primitive) {
+  class MustachePrimWrapper(val primitive: Primitive, additional: Map[String, AnyRef]) {
     def name            = primitive.fullName
     def _name_          = primitive.fullName.toLowerCase
     def description     = primitive.description
@@ -36,10 +38,18 @@ object Documenter {
         primitive.arguments.map(argSet => new InfixPrimExample(primitive, argSet)).asJava
       else
         primitive.arguments.map(argSet => new PrefixPrimExample(primitive, argSet)).asJava
+    def toMap: JMap[String, AnyRef] =
+      (Map(
+        "name"        -> name,
+        "_name_"      -> _name_,
+        "description" -> description,
+        "isInfix"     -> Boolean.box(isInfix),
+        "examples"    -> examples) ++ additional).asJava
+
   }
 
   class ContentSection(val fullCategoryName: String, val shortCategoryName: String, primitives: Seq[Primitive]) {
-    val prims = primitives.map(new MustachePrimWrapper(_)).asJava
+    val prims = primitives.map(new MustachePrimWrapper(_, Map())).asJava
   }
 
   def renderPrimitive(prim: Primitive, mustacheTemplate: String): String = {
@@ -50,7 +60,7 @@ object Documenter {
     val mf = new DefaultMustacheFactory(mr)
     val stache = mf.compile("primitives")
     val out = new StringWriter()
-    stache.execute(out, new MustachePrimWrapper(prim)).flush()
+    stache.execute(out, new MustachePrimWrapper(prim, Map())).flush()
     out.toString
   }
 
@@ -59,12 +69,23 @@ object Documenter {
   }
 
   def documentAll(docConfig: DocumentationConfig, prims: Seq[Primitive], basePath: Path): String = {
-    val renderedPrims = prims.map(renderPrimitive(_, docConfig.primTemplate))
-
     val mr = new MustacheResolver {
-      override def getReader(resourceName: String): Reader =
-        new StringReader(docConfig.markdownTemplate)
+      override def getReader(resourceName: String): Reader = {
+        val s =
+          if (resourceName == "document")
+            docConfig.markdownTemplate
+          else if (resourceName == "primTemplate")
+            docConfig.primTemplate
+          else
+            try {
+              Files.readAllLines(basePath.resolve(resourceName)).asScala.mkString("\n")
+            } catch {
+              case io: IOException => ""
+            }
+        new StringReader(s)
+      }
     }
+
     val mf = new DefaultMustacheFactory(mr)
     val stache = mf.compile("document")
     val out = new StringWriter()
@@ -75,7 +96,8 @@ object Documenter {
       if (userSpecifiedContents.isEmpty) Seq(new ContentSection("", "", prims)).asJava else userSpecifiedContents
 
     val variables = Map(
-      "allPrimitives" -> renderedPrims.asJava,
+      "primitives"    -> prims.map(new MustachePrimWrapper(_, docConfig.additionalConfig).toMap).asJava,
+      "allPrimitives" -> new AllPrimitivesAdapter(),
       "contents"      -> tableOfContents,
       "include"       -> new IncludeFile(basePath)) ++
       docConfig.additionalConfig
@@ -83,9 +105,24 @@ object Documenter {
     out.toString
   }
 
-  class IncludeFile(basePath: Path) extends java.util.function.Function[String, String] {
+  class IncludeFile(basePath: Path) extends TemplateFunction {
     override def apply(filename: String): String = {
       Files.readAllLines(basePath.resolve(filename)).asScala.mkString("\n")
+    }
+  }
+
+  class AllPrimitivesAdapter extends TemplateFunction {
+    override def apply(content: String): String = {
+      val mr = new MustacheResolver {
+        override def getReader(resourceName: String): Reader =
+          new StringReader(content)
+      }
+      val mf = new DefaultMustacheFactory(mr)
+      val stache = mf.compile("document")
+      val out = new StringWriter()
+      val evaluated = stache.execute(out, "{{> primTemplate}}")
+      s"""|{{#primitives}}${evaluated}
+          |{{/primitives}}""".stripMargin
     }
   }
 }

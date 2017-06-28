@@ -94,16 +94,55 @@ class DocumenterSpec extends FunSpec {
       assertResult(expectedDoc)(Documenter.documentAll(docConfig, Seq(basicPrim.build), dummyPath))
     }
 
+    it("renders the doc using the primTemplate partial") {
+      val expectedDoc =
+        """|about this
+           |
+           |### foo
+           |
+           |```NetLogo
+           |foo
+           |```
+           |
+           |does stuff
+           |
+           |license stuff""".stripMargin
+
+      val markdownTemplate =
+        """|about this
+           |
+           |{{#primitives}}
+           |{{> primTemplate}}
+           |{{/primitives}}
+           |
+           |license stuff""".stripMargin
+
+      val docConfig = DocumentationConfig(markdownTemplate, primTemplate, Map())
+      assertResult(expectedDoc)(Documenter.documentAll(docConfig, Seq(basicPrim.build), dummyPath))
+    }
+
     it("renders whole documents with included files") {
       val tempFile = Files.createTempFile("testInclude", ".txt")
-      Files.write(tempFile, "included text".getBytes)
-      val docConfig = DocumentationConfig(s"not-included text {{#include}}${tempFile.getName(tempFile.getNameCount - 1)}{{/include}}", "", Map())
-      assertResult("not-included text included text")(Documenter.documentAll(docConfig, Seq(basicPrim.build), tempFile.getParent))
+      Files.write(tempFile, "included text {{a}}".getBytes)
+      val docConfig = DocumentationConfig(s"not-included text {{#include}}${tempFile.getName(tempFile.getNameCount - 1)}{{/include}}", "", Map(), Map("a" -> "here"))
+      assertResult("not-included text included text here")(Documenter.documentAll(docConfig, Seq(basicPrim.build), tempFile.getParent))
+    }
+
+    it("renders whole documents with included files as partials") {
+      val tempFile = Files.createTempFile("testInclude", ".txt")
+      Files.write(tempFile, "included text {{a}}".getBytes)
+      val docConfig = DocumentationConfig(s"not-included text {{> ${tempFile.getName(tempFile.getNameCount - 1)}}}", "", Map(), Map("a" -> "here"))
+      assertResult("not-included text included text here")(Documenter.documentAll(docConfig, Seq(basicPrim.build), tempFile.getParent))
     }
 
     it("makes additional config variables available to markdownTemplate") {
       val docConfig = DocumentationConfig("{{a}} {{b}}", "", Map(), Map("a" -> "1", "b" -> "2"))
       assertResult("1 2")(Documenter.documentAll(docConfig, Seq(), dummyPath))
+    }
+
+    it("makes additional config variables available to primitive templates") {
+      val docConfig = DocumentationConfig("{{#primitives}}{{> primTemplate}}{{/primitives}}", "{{a}}", Map(), Map("a" -> "here"))
+      assertResult("here")(Documenter.documentAll(docConfig, Seq(basicPrim.build), dummyPath))
     }
 
     it("makes data available for a table of contents") {

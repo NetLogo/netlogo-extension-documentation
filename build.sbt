@@ -2,7 +2,7 @@ sbtPlugin := true
 
 scalaVersion := "2.10.6"
 
-version    := "0.6.2"
+version    := "0.7.0"
 
 organization := "org.nlogo"
 
@@ -18,9 +18,9 @@ libraryDependencies +=
   "org.scalatest"  %% "scalatest"  % "2.2.6"  % "test"
 
 libraryDependencies ++= Seq(
-  "com.typesafe" % "config" % "1.3.0",
-  "com.github.spullara.mustache.java" % "compiler"              % "0.9.3",
-  "com.github.spullara.mustache.java" % "scala-extensions-2.10" % "0.9.3"
+  "com.typesafe" % "config" % "1.3.1",
+  "com.github.spullara.mustache.java" % "compiler"              % "0.9.5",
+  "com.github.spullara.mustache.java" % "scala-extensions-2.10" % "0.9.5"
 )
 
 bintrayRepository   := "NetLogo-JVM"

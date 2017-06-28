@@ -132,7 +132,7 @@ The following types are recognized. All other types are assumed to be a custom t
 
 ### Markdown Template
 
-* `include` is a lambda that includes files from `extensionDocumentationIncludePath`. This defauls to the project root, but may be changed. Use like: `{{#include}}FILENAME.md{{/include}}`
+* Use mustache partials to include files from `extensionDocumentationIncludePath`. This defauls to the project root, but may be changed. Usage: `{{> FILENAME.md }}`. Note that the same variables will be available to `FILENAME.md` as are available in the markdown template, if you would like to include mustached in those files.
 * `contents` is a list of table of contents objects that look like the following:
 ```
   {
@@ -141,8 +141,7 @@ The following types are recognized. All other types are assumed to be a custom t
     prims: <List of prims as described in Primitives template below>
   }
 ```
-* `allPrimitives` is a list of strings created by running each primitive through the primTemplate.
-  Typically this is iterated through like `{{#allPrimitives}}{{{.}}}{{/allPrimitives}}`.
+* `primitives` is a decorated list of primitive objects.  You can use this in conjunction with `primTemplate, which is available as a partial. This looks like: `{{#primitives}}{{> primTemplate}}{{/primitives}}`
 * any variables from `additionalConfig` will be available. For instance, if you had `additionalConfig: { netlogoUrl = "ccl.northwestern.edu/netlogo/" }`, you could use the following in the markdown template: `[The NetLogo Website]({{netlogoUrl}})`.
 
 ### Primitives Template
@@ -161,3 +160,11 @@ The following types are recognized. All other types are assumed to be a custom t
     * `typeName`: The TypeName of the argument. Use `{{typeName.name}}` to get the human-readable name of the type
   * `leftArg`: a single argument value (infix primitives only)
   * `rightArgs`: a list of argument values, omitting left argument (infix primitives only)
+* All variables defined in `additionalConfig` are also available.
+
+### Deprecated (but still-supported features)
+
+The following are top-level keys which were superseded in 0.7.0 but are still available for convenience.
+
+* `allPrimitives` was a list of strings created by running each primitive through the primTemplate. Use `primitives` and the `primTemplate` partial instead. The extension documentation plugin will automatically convert the typically-used `{{#allPrimitives}}{{{.}}}{{/allPrimitives}}` to `{{#primitives}}{{> primTemplate }}{{/allPrimitives}}`, but this conversion will likely be removed in future versions.
+* `include` is a lambda that includes files from `extensionDocumentationIncludePath`. This defauls to the project root, but may be changed. Use like: `{{#include}}FILENAME.md{{/include}}`. `include` will likely be phased out in a future version - it is recommended to use partials instead (`{{> FILENAME.md}}`).
