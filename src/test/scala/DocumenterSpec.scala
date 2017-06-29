@@ -41,6 +41,25 @@ class DocumenterSpec extends FunSpec {
         Documenter.renderPrimitive(basicPrim.syntax(_.withArgumentSet(Seq(UnnamedType(NetLogoList)))).build, primTemplate))
     }
 
+    it("treats descriptions as though they were partials") {
+      val markdownTemplate = """|{{#primitives}}
+                                |{{> primTemplate}}
+                                |{{/primitives}}""".stripMargin
+      val primWithDescription = basicPrim.description("does {{a}}").build
+      assertResult("""|### foo
+                      |
+                      |```NetLogo
+                      |foo
+                      |```
+                      |
+                      |does bar""".stripMargin) {
+        Documenter.documentAll(
+          DocumentationConfig(markdownTemplate, primTemplate, Map(), Map("a" -> "bar")),
+          Seq(primWithDescription),
+          dummyPath).trim
+       }
+    }
+
     it("makes _name_ and _fullName_ available for lowercase-only use") {
       val basicPrim =
         PrimitiveBuilder.empty.name("fooBar").description("does stuff")

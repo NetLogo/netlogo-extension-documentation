@@ -27,10 +27,10 @@ object Documenter {
   }
 
   class MustachePrimWrapper(val primitive: Primitive, additional: Map[String, AnyRef]) {
-    def name            = primitive.fullName
-    def _name_          = primitive.fullName.toLowerCase
-    def description     = primitive.description
-    def isInfix         = primitive.syntax.isInfix
+    def name             = primitive.fullName
+    def _name_           = primitive.fullName.toLowerCase
+    lazy val description = renderMustache(primitive.description, additional.asJava)
+    def isInfix          = primitive.syntax.isInfix
     def examples: java.util.List[_ <: PrimExample] =
       if (primitive.arguments.isEmpty)
         Seq(new PrefixPrimExample(primitive, Seq())).asJava
@@ -53,14 +53,18 @@ object Documenter {
   }
 
   def renderPrimitive(prim: Primitive, mustacheTemplate: String): String = {
+    renderMustache(mustacheTemplate, new MustachePrimWrapper(prim, Map()))
+  }
+
+  private def renderMustache(template: String, scope: AnyRef): String = {
     val mr = new MustacheResolver {
       override def getReader(resourceName: String): Reader =
-        new StringReader(mustacheTemplate)
+        new StringReader(template)
     }
     val mf = new DefaultMustacheFactory(mr)
     val stache = mf.compile("primitives")
     val out = new StringWriter()
-    stache.execute(out, new MustachePrimWrapper(prim, Map())).flush()
+    stache.execute(out, scope).flush()
     out.toString
   }
 
