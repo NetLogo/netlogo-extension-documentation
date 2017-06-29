@@ -28,48 +28,46 @@ enablePlugins(org.nlogo.build.ExtensionDocumentationPlugin)
 
 Finally, add a simple documentation.conf
 
-```hocon
-extensionName = "my-ext"
-markdownTemplate = """
-# Your NetLogo Extension
+    extensionName = "my-ext"
+    markdownTemplate = """
+    # Your NetLogo Extension
 
-This extension contains NetLogo primitives
+    This extension contains NetLogo primitives
 
-{{#include}}BUILDING.md{{/include}}
+    {{> BUILDING.md}}
 
-## Primitives
+    ## Primitives
 
-{{#allPrimitives}}
-{{{.}}}
-{{/allPrimitives}}
-"""
-primTemplate = """
-### `{{name}}`
+    {{#primitives}}
+    {{> primTemplate}}
+    {{/primitives}}
+    """
+    primTemplate = """
+    ### `{{name}}`
 
-```NetLogo
-{{#examples}}
-{{primitive.fullName}}{{#args}} {{name}}{{/args}}
-{{/examples}}
-```
+    ```NetLogo
+    {{#examples}}
+    {{primitive.fullName}}{{#args}} {{name}}{{/args}}
+    {{/examples}}
+    ```
 
-{{{description}}}
-"""
-primitives = [
-  {
-    name: a-command,
-    type: command,
-    arguments: [ { name: my-turtle, type: turtle } ],
-    description: "does thing to turtle"
-  },
-  {
-    name: a-reporter,
-    type: reporter,
-    returns: anything,
-    arguments: [ { name: list-of-stuff, type: list } ],
-    description: "returns a thing from the list"
-  }
-]
-```
+    {{{description}}}
+    """
+    primitives = [
+      {
+        name: a-command,
+        type: command,
+        arguments: [ { name: my-turtle, type: turtle } ],
+        description: "does thing to turtle"
+      },
+      {
+        name: a-reporter,
+        type: reporter,
+        returns: anything,
+        arguments: [ { name: list-of-stuff, type: list } ],
+        description: "returns a thing from the list"
+      }
+    ]
 
 Then run the `extensionDocument` sbt command and you'll see a shiny new README!
 
