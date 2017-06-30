@@ -181,7 +181,7 @@ object HoconParser {
     def getMap(c: Config, k: String): java.util.Map[String, Object] = c.getObject(k).unwrapped
 
     val additionalConfig =
-      defaultValue[java.util.Map[String, Object]](config, "additionalConfig", getMap _, new java.util.HashMap[String, Object]())
+      defaultValue[java.util.Map[String, Object]](config, "additionalVariables", getMap _, new java.util.HashMap[String, Object]())
 
     val tableOfContents: Map[String, String] = try {
       val tocConf = config.getObject("tableOfContents")
