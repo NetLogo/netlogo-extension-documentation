@@ -1,8 +1,8 @@
 sbtPlugin := true
 
-scalaVersion := "2.10.6"
+scalaVersion := "2.12.4"
 
-version    := "0.7.2"
+version    := "0.8.0"
 
 organization := "org.nlogo"
 
@@ -15,7 +15,7 @@ isSnapshot := true
 licenses   += ("Public Domain", url("http://creativecommons.org/licenses/publicdomain/"))
 
 libraryDependencies +=
-  "org.scalatest"  %% "scalatest"  % "2.2.6"  % "test"
+  "org.scalatest"  %% "scalatest"  % "3.0.4"  % "test"
 
 libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.1",

@@ -4,7 +4,7 @@ import java.io.{ File, StringReader }
 
 import com.typesafe.config.{ Config, ConfigException, ConfigFactory, ConfigObject, ConfigParseOptions, ConfigSyntax }
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 case class WarnableValue[+A](obtainedValue: A, warnings: Seq[Warning]) {
   def map[B](f: A => B): WarnableValue[B] = WarnableValue(f(obtainedValue), warnings)
@@ -32,7 +32,7 @@ object HoconParser {
 
   def parsePrimitives(config: Config): ParsingResult = {
     val extensionName = defaultValue(config, "extensionName", getString _, "")
-    config.getConfigList("primitives")
+    config.getConfigList("primitives").asScala
       .map(parsePrimitive(extensionName))
       .foldLeft(ParsingResult(Seq(), Seq())) {
         case (res, WarnableValue(Some(prim), warnings)) =>
@@ -121,7 +121,7 @@ object HoconParser {
 
     val tags: Seq[String] =
       defaultValue(c, "tags",
-        (c: Config, k: String) => c.getAnyRefList(k), new java.util.ArrayList[AnyRef]())
+        (c: Config, k: String) => c.getAnyRefList(k), new java.util.ArrayList[AnyRef]()).asScala
         .collect { case s: String => s }
 
     def buildPrimitiveWithName(name: String): WarnableValue[Primitive] =
@@ -141,14 +141,14 @@ object HoconParser {
 
     val arguments =
       foldArgs(defaultValue[java.util.List[_ <: Config]](
-        c, "arguments", _.getConfigList(_), new java.util.ArrayList[Config]())
+        c, "arguments", _.getConfigList(_), new java.util.ArrayList[Config]()).asScala
           .map(parseNamedType)
           .toSeq)
 
     val altArguments: WarnableValue[Option[Seq[NamedType]]] =
       defaultValue[Option[java.util.List[_ <: Config]]](
         c, "alternateArguments", (c: Config, k: String) => Option(c.getConfigList(k)), None)
-          .map(_.map(parseNamedType).toSeq)
+          .map(_.asScala.map(parseNamedType).toSeq)
           .map(foldArgs)
           .map(_.map(Option(_)))
           .getOrElse(WarnableValue(None, Seq()))
@@ -185,7 +185,7 @@ object HoconParser {
 
     val tableOfContents: Map[String, String] = try {
       val tocConf = config.getObject("tableOfContents")
-      tocConf.keySet.flatMap {
+      tocConf.keySet.asScala.flatMap {
         case key =>
           defaultValue[Option[String]](tocConf.toConfig, key, getStringOption _, None)
             .map(value => (key, value))

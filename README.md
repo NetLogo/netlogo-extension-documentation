@@ -17,7 +17,18 @@ resolvers += Resolver.url(
   url("http://dl.bintray.com/content/netlogo/NetLogo-JVM"))(
     Resolver.ivyStylePatterns)
 
-addSbtPlugin("org.nlogo" % "netlogo-extension-documentation" % "0.6")
+addSbtPlugin("org.nlogo" % "netlogo-extension-documentation" % "0.8.0")
+```
+
+Or for sbt 0.13.x
+
+```scala
+resolvers += Resolver.url(
+  "NetLogo-JVM",
+  url("http://dl.bintray.com/content/netlogo/NetLogo-JVM"))(
+    Resolver.ivyStylePatterns)
+
+addSbtPlugin("org.nlogo" % "netlogo-extension-documentation" % "0.7.2")
 ```
 
 Then add the following to your `build.sbt`

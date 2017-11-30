@@ -23,7 +23,8 @@ object ExtensionDocumentationPlugin extends AutoPlugin {
       val configDocument = HoconParser.parseConfigFile(extensionDocumentationConfigFile.value)
       val documentationConfig = HoconParser.parseConfig(configDocument)
       val parsedPrims = HoconParser.parsePrimitives(configDocument)
-      parsedPrims.warnings.foreach { w => streams.value.log.warn(w.message) }
+      val streamsValue = streams.value
+      parsedPrims.warnings.foreach { w => streamsValue.log.warn(w.message) }
 
       val documentationText = Documenter.documentAll(documentationConfig, parsedPrims.primitives, extensionDocumentationIncludePath.value.toPath)
       Files.write(extensionDocumentationReadmeTarget.value.toPath, documentationText.getBytes)
