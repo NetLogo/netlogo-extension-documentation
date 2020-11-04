@@ -14,7 +14,9 @@ class DocumenterSpec extends FunSpec {
       """|### {{name}}
          |
          |```NetLogo
-         |{{#examples}}{{name}}{{#args}} *{{typeName.name}}*{{/args}}{{/examples}}
+         |{{#examples}}
+         |{{#isOptional}}({{/isOptional}}{{name}}{{#args}} *{{typeName.name}}*{{/args}}{{#isOptional}}){{/isOptional}}
+         |{{/examples}}
          |```
          |
          |{{description}}""".stripMargin
@@ -139,6 +141,57 @@ class DocumenterSpec extends FunSpec {
       val docConfig = DocumentationConfig(markdownTemplate, primTemplate, Map())
       assertResult(expectedDoc)(Documenter.documentAll(docConfig, Seq(basicPrim.build), dummyPath))
     }
+
+    it("renders the doc with multiple-arg syntax prims") {
+      val expectedDoc =
+        """|about this
+           |
+           |### foo
+           |
+           |```NetLogo
+           |foo *number* *turtle*
+           |foo *number* *turtleset*
+           |```
+           |
+           |does stuff
+           |### bar
+           |
+           |```NetLogo
+           |bar *number*
+           |(bar *number* *string*)
+           |```
+           |
+           |does stuff
+           |
+           |license stuff""".stripMargin
+
+      val markdownTemplate =
+        """|about this
+           |
+           |{{#primitives}}
+           |{{> primTemplate}}
+           |{{/primitives}}
+           |
+           |license stuff""".stripMargin
+
+      val docConfig = DocumentationConfig(markdownTemplate, primTemplate, Map())
+
+      val ut = (n: TypeName) => new UnnamedType(n)
+
+      val number = ut(NetLogoNumber)
+
+      val fooArgs1: Seq[NamedType] = Seq(number, ut(new Agent(Turtle)))
+      val fooArgs2: Seq[NamedType] = Seq(number, ut(new Agentset(Turtle)))
+      val fooPrim   = basicPrim.syntax(_.withArgumentSet(fooArgs1).withArgumentSet(fooArgs2)).build
+
+      val barArgs1: Seq[NamedType] = Seq(number)
+      val barArgs2: Seq[NamedType] = Seq(number, ut(NetLogoString))
+      val barPrim  = basicPrim.name("bar").syntax(_.withArgumentSet(barArgs1).withArgumentSet(barArgs2)).build
+
+      val resultDoc = Documenter.documentAll(docConfig, Seq(fooPrim, barPrim), dummyPath)
+      assertResult(expectedDoc)(resultDoc)
+    }
+
 
     it("renders whole documents with included files") {
       val tempFile = Files.createTempFile("testInclude", ".txt")
