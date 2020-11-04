@@ -2,7 +2,7 @@ sbtPlugin := true
 
 scalaVersion := "2.12.12"
 
-version    := "0.8.0"
+version    := "0.8.1"
 
 organization := "org.nlogo"
 
@@ -10,7 +10,7 @@ name       := "netlogo-extension-documentation"
 
 crossPaths := false
 
-isSnapshot := true
+isSnapshot := false
 
 licenses   += ("Public Domain", url("http://creativecommons.org/licenses/publicdomain/"))
 
