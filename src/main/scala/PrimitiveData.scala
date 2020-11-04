@@ -69,7 +69,9 @@ case object ReferenceType extends TypeName {
 case object OptionalType extends TypeName {
   override def name = "optional command block"
 }
-case class Repeatable(repeatedType: TypeName) extends TypeName
+case class Repeatable(repeatedType: TypeName) extends TypeName {
+  override def name = s"${repeatedType.name}..."
+}
 case object WildcardType extends TypeName {
   override def name = "anything"
 }
@@ -80,6 +82,7 @@ case class CustomType(customName: String) extends TypeName {
 sealed trait NamedType {
   def name: String
   def typeName: TypeName
+  def argumentPlaceholder: String = name.replace(' ', '_')
 }
 
 case class UnnamedType(typeName: TypeName) extends NamedType {

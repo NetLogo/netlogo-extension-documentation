@@ -15,7 +15,7 @@ class DocumenterSpec extends FunSpec {
          |
          |```NetLogo
          |{{#examples}}
-         |{{#isOptional}}({{/isOptional}}{{name}}{{#args}} *{{typeName.name}}*{{/args}}{{#isOptional}}){{/isOptional}}
+         |{{#isOptional}}({{/isOptional}}{{name}}{{#args}} *{{argumentPlaceholder}}*{{/args}}{{#isOptional}}){{/isOptional}}
          |{{/examples}}
          |```
          |
@@ -162,6 +162,14 @@ class DocumenterSpec extends FunSpec {
            |```
            |
            |does stuff
+           |### baz
+           |
+           |```NetLogo
+           |baz *anonymous_command* *anonymous_command*
+           |(baz *anonymous_command...*)
+           |```
+           |
+           |does stuff
            |
            |license stuff""".stripMargin
 
@@ -188,7 +196,11 @@ class DocumenterSpec extends FunSpec {
       val barArgs2: Seq[NamedType] = Seq(number, ut(NetLogoString))
       val barPrim  = basicPrim.name("bar").syntax(_.withArgumentSet(barArgs1).withArgumentSet(barArgs2)).build
 
-      val resultDoc = Documenter.documentAll(docConfig, Seq(fooPrim, barPrim), dummyPath)
+      val bazArgs1: Seq[NamedType] = Seq(ut(CommandType), ut(CommandType))
+      val bazArgs2: Seq[NamedType] = Seq(ut(Repeatable(CommandType)))
+      val bazPrim  = basicPrim.name("baz").syntax(_.withArgumentSet(bazArgs1).withArgumentSet(bazArgs2)).build
+
+      val resultDoc = Documenter.documentAll(docConfig, Seq(fooPrim, barPrim, bazPrim), dummyPath)
       assertResult(expectedDoc)(resultDoc)
     }
 
