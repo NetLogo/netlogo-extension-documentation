@@ -16,7 +16,7 @@ object Documenter {
     def _name_ = primitive.fullName.toLowerCase
   }
 
-  class PrefixPrimExample(val primitive: Primitive, argSet: Seq[NamedType]) extends PrimExample {
+  class PrefixPrimExample(val primitive: Primitive, argSet: Seq[NamedType], val isOptional: Boolean) extends PrimExample {
     def args: java.util.List[NamedType] = argSet.asJava
   }
 
@@ -33,11 +33,13 @@ object Documenter {
     def isInfix          = primitive.syntax.isInfix
     def examples: java.util.List[_ <: PrimExample] =
       if (primitive.arguments.isEmpty)
-        Seq(new PrefixPrimExample(primitive, Seq())).asJava
+        Seq(new PrefixPrimExample(primitive, Seq(), false)).asJava
       else if (primitive.syntax.isInfix)
         primitive.arguments.map(argSet => new InfixPrimExample(primitive, argSet)).asJava
       else
-        primitive.arguments.map(argSet => new PrefixPrimExample(primitive, argSet)).asJava
+        primitive.arguments.zipWithIndex.map { case (argSet, index) =>
+          new PrefixPrimExample(primitive, argSet, index > 0 && primitive.syntax.areAltArgsOptional)
+        }.asJava
     def toMap: JMap[String, AnyRef] =
       (Map(
         "name"        -> name,

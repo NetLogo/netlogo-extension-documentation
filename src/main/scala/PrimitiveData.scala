@@ -93,7 +93,10 @@ sealed trait PrimitiveType
 case class Reporter(returnType: TypeName) extends PrimitiveType
 case object Command extends PrimitiveType
 
-case class PrimSyntax(arguments: Seq[Seq[NamedType]], agentContext: AgentType = AllAgents, isInfix: Boolean = false)
+case class PrimSyntax(arguments: Seq[Seq[NamedType]], agentContext: AgentType = AllAgents, isInfix: Boolean = false) {
+  def areAltArgsOptional: Boolean =
+    arguments.length > 1 && arguments(0).length != arguments(1).length
+}
 
 case class Primitive(
   name: String,
