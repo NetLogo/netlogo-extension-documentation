@@ -2,7 +2,7 @@ sbtPlugin := true
 
 scalaVersion := "2.12.12"
 
-version    := "0.8.2"
+version    := "0.8.3"
 
 organization := "org.nlogo"
 
