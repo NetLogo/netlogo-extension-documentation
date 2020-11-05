@@ -55,7 +55,7 @@ Finally, add a simple documentation.conf
 
     ```NetLogo
     {{#examples}}
-    {{primitive.fullName}}{{#args}} {{name}}{{/args}}
+    {{{#isOptional}}({{/isOptional}}{{primitive.fullName}}{{#args}} *{{argumentPlaceholder}}*{{/args}}{{#isOptional}}){{/isOptional}}
     {{/examples}}
     ```
 
@@ -154,6 +154,7 @@ The following types are recognized. All other types are assumed to be a custom t
 
 * `name`: The name of the primitive
 * `_name_`: The name of the primitive, lowercased.
+* `argumentPlaceholder`: The name of the primitive with spaces replaced by underscores so it is a single word.
 * `description`: (remember to use `{{{`, `}}}`, as this is in markdown)
 * `primitive`: a Primitive object (see PrimitiveData.scala)
 * `isInfix`: boolean value, true only if primitive is infix prim
@@ -166,6 +167,7 @@ The following types are recognized. All other types are assumed to be a custom t
     * `typeName`: The TypeName of the argument. Use `{{typeName.name}}` to get the human-readable name of the type
   * `leftArg`: a single argument value (infix primitives only)
   * `rightArgs`: a list of argument values, omitting left argument (infix primitives only)
+  * `isOptional`: boolean value, true if this example is for an alternative set of arguments whose length is different than the primary example.
 * All variables defined in `additionalConfig` are also available.
 
 ### Deprecated (but still-supported features)
