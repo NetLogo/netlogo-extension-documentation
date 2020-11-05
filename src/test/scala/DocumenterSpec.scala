@@ -165,8 +165,8 @@ class DocumenterSpec extends FunSpec {
            |### baz
            |
            |```NetLogo
-           |baz *anonymous_command* *anonymous_command*
-           |(baz *anonymous_command...*)
+           |baz *anonymous-command* *anonymous-command*
+           |(baz *anonymous-command...*)
            |```
            |
            |does stuff

@@ -1,5 +1,9 @@
 package org.nlogo.build
 
+object ArgumentPlaceholder {
+  var spaceReplacement = '-'
+}
+
 sealed trait AgentType {
   def agentName: String = "agent"
 }
@@ -82,7 +86,7 @@ case class CustomType(customName: String) extends TypeName {
 sealed trait NamedType {
   def name: String
   def typeName: TypeName
-  def argumentPlaceholder: String = name.replace(' ', '_')
+  def argumentPlaceholder: String = name.replace(' ', ArgumentPlaceholder.spaceReplacement)
 }
 
 case class UnnamedType(typeName: TypeName) extends NamedType {
