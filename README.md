@@ -12,12 +12,9 @@ mustache for document rendering.
 Get started by adding the following to your `project/plugins.sbt`
 
 ```scala
-resolvers += Resolver.url(
-  "NetLogo-JVM",
-  url("http://dl.bintray.com/content/netlogo/NetLogo-JVM"))(
-    Resolver.ivyStylePatterns)
+resolvers += Resolver.bintrayIvyRepo("netlogo", "NetLogo-JVM")
 
-addSbtPlugin("org.nlogo" % "netlogo-extension-documentation" % "0.8.0")
+addSbtPlugin("org.nlogo" % "netlogo-extension-documentation" % "0.8.2")
 ```
 
 Or for sbt 0.13.x
