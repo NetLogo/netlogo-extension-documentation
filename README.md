@@ -12,7 +12,7 @@ mustache for document rendering.
 Get started by adding the following to your `project/plugins.sbt`
 
 ```scala
-resolvers += Resolver.bintrayIvyRepo("netlogo", "NetLogo-JVM")
+resolvers += "netlogo-extension-documentation" at "https://dl.cloudsmith.io/public/netlogo/netlogo-extension-documentation/maven/"
 
 addSbtPlugin("org.nlogo" % "netlogo-extension-documentation" % "0.8.2")
 ```
@@ -176,3 +176,13 @@ The following are top-level keys which were superseded in 0.7.0 but are still av
 
 * `allPrimitives` was a list of strings created by running each primitive through the primTemplate. Use `primitives` and the `primTemplate` partial instead. The extension documentation plugin will automatically convert the typically-used `{{#allPrimitives}}{{{.}}}{{/allPrimitives}}` to `{{#primitives}}{{> primTemplate }}{{/allPrimitives}}`, but this conversion will likely be removed in future versions.
 * `include` is a lambda that includes files from `extensionDocumentationIncludePath`. This defauls to the project root, but may be changed. Use like: `{{#include}}FILENAME.md{{/include}}`. `include` will likely be phased out in a future version - it is recommended to use partials instead (`{{> FILENAME.md}}`).
+
+## Terms of Use
+
+[![CC0](http://i.creativecommons.org/p/zero/1.0/88x31.png)](http://creativecommons.org/publicdomain/zero/1.0/)
+
+The netlogo-extension-documentation plugin is in the public domain.  To the extent possible under law, Uri Wilensky has waived all copyright and related or neighboring rights.
+
+[![Hosted By: Cloudsmith](https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith&style=flat-square)](https://cloudsmith.com)
+
+Package repository hosting is graciously provided by [Cloudsmith](https://cloudsmith.com).

@@ -1,5 +1,3 @@
-resolvers += Resolver.bintrayIvyRepo("netlogo", "publish-versioned")
+resolvers += "netlogo-publish-versioned" at "https://dl.cloudsmith.io/public/netlogo/publish-versioned/maven/"
 
-addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.1")
-
-addSbtPlugin("org.nlogo" % "publish-versioned-plugin" % "2.2")
+addSbtPlugin("org.nlogo" % "publish-versioned-plugin" % "3.0.0")

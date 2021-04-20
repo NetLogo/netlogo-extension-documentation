@@ -2,17 +2,17 @@ sbtPlugin := true
 
 scalaVersion := "2.12.12"
 
-version    := "0.8.3"
+version := "0.8.3"
 
 organization := "org.nlogo"
 
-name       := "netlogo-extension-documentation"
+name := "netlogo-extension-documentation"
 
 crossPaths := false
 
 isSnapshot := false
 
-licenses   += ("Public Domain", url("http://creativecommons.org/licenses/publicdomain/"))
+licenses += ("Creative Commons Zero v1.0 Universal Public Domain Dedication", url("https://creativecommons.org/publicdomain/zero/1.0/"))
 
 libraryDependencies +=
   "org.scalatest"  %% "scalatest"  % "3.0.4"  % "test"
@@ -23,6 +23,4 @@ libraryDependencies ++= Seq(
   "com.github.spullara.mustache.java" % "scala-extensions-2.10" % "0.9.5"
 )
 
-bintrayRepository   := "NetLogo-JVM"
-
-bintrayOrganization := Some("netlogo")
+publishTo := { Some("Cloudsmith API" at "https://maven.cloudsmith.io/netlogo/netlogo-extension-documentation/") }
